@@ -53,14 +53,50 @@ router.get('/all-recipes-structured', async (req, res) => {
             }
             const rating =
             {
-                lable: card.properties?.['Rating']?.select?.name || null,
+                label: card.properties?.['Rating']?.select?.name || null,
                 value: card.properties?.['Rating']?.select?.name
                     ? Number(card.properties['Rating'].select.name.match(/\((\d+)\)/)?.[1]) || null
                     : null
             }
 
-            const introductin = ""
+            const introduction = ""
             const chefNotes = ""
+            const personalNotes = ""
+            const url = ""
+            const mealType = []
+            const cookingMethod = []
+            const source = ""
+
+
+
+            const variants = [
+                {
+                    isOriginal: true,
+                    title: null,
+                    ingredients: "",
+                    instructions: "",
+                    macrosPerServing: {
+                        calories: "",
+                        protein: "",
+                        fat: "",
+                        carbohydrates: "",
+                    },
+                    servings: ""
+                },
+                {
+                    isOriginal: false,
+                    title: "",
+                    ingredients: "",
+                    instructions: "",
+                    macrosPerServing: {
+                        calories: "",
+                        protein: "",
+                        fat: "",
+                        carbohydrates: "",
+                    },
+                    servings: ""
+                }
+            ]
 
 
 
