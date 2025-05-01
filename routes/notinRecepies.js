@@ -59,6 +59,9 @@ router.get('/all-recipes-structured', async (req, res) => {
                     : null
             }
 
+            const introductin = ""
+            const chefNotes = ""
+
 
 
 
