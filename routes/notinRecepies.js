@@ -73,44 +73,29 @@ router.get('/all-recipes-structured', async (req, res) => {
             const cookingMethod = (card.properties?.['Tillagningsmetod']?.multi_select).map((item) => item.name) || null
 
             const introduction = getPlainTextFromRichText(card.properties?.['Introduktion']);
+            const instructions = getPlainTextFromRichText(card.properties?.['Instruktioner']);
+
             const chefNotes = getPlainTextFromRichText(card.properties?.['Tips']);
             const personalNotes = getPlainTextFromRichText(card.properties?.['Notes (egna)']);
 
+            const variantsToItterate = ["original", "custom1", "custom2", "custom3"]
+            const variants = variantsToItterate.map((variant) => {
+                return {
+                    isOriginal: variant == "original" ? true : false,
+                    title: getPlainTextFromRichText(card.properties?.[`Titel (${variant})`]),
+                    personalComment: getPlainTextFromRichText(card.properties?.[`Kommentar (${variant})`]),
+                    ingredients: getPlainTextFromRichText(card.properties?.[`Ingredienser (${variant})`]),
 
-
-            const variants = [
-                {
-                    isOriginal: true,
-                    title: null,
-                    ingredients: "",
-                    instructions: "",
                     macrosPerServing: {
-                        calories: "",
-                        protein: "",
-                        fat: "",
-                        carbohydrates: "",
+                        calories: card.properties?.[`Kcal/port (${variant})`]?.number || null,
+                        protein: card.properties?.[`Protein(g)/port (${variant})`]?.number || null,
+                        fat: card.properties?.[`Fett(g)/port (${variant})`]?.number || null,
+                        carbohydrates: card.properties?.[`Kolhydrater(g)/port (${variant})`]?.number || null,
                     },
-                    servings: ""
-                },
-                {
-                    isOriginal: false,
-                    title: "",
-                    ingredients: "",
-                    instructions: "",
-                    macrosPerServing: {
-                        calories: "",
-                        protein: "",
-                        fat: "",
-                        carbohydrates: "",
-                    },
-                    servings: ""
+                    servings: card.properties?.[`Antal Portioner (${variant})`]?.number || null,
                 }
-            ]
 
-
-
-
-
+            })
 
             return { id, title, url, created_time, last_edited_time, source, mainIngredient, categories, lastMealPrep, rating, mealType, cookingMethod, introduction, chefNotes, personalNotes, variants };
         });
