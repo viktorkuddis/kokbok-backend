@@ -17,6 +17,12 @@ const notionDatabaseId = process.env.NOTION_DATABASE_ID;
 const notion = new Client({ auth: notionSecret });
 
 
+
+function getPlainTextFromRichText(prop) {
+    return prop?.rich_text?.map(t => t.plain_text).join('') || null;
+}
+
+
 // RUTTER::::
 
 // kompletta data direkt från notion:
@@ -40,6 +46,10 @@ router.get('/all-recipes-structured', async (req, res) => {
 
             const id = card.id || null;
             const title = card.properties?.['Title']?.title?.[0]?.plain_text || "ingen titel"
+            const url = card.url || null
+            const created_time = card.created_time || null
+            const last_edited_time = card.last_edited_time || null
+            const source = card.properties?.['Källa']?.select?.name || null
             const mainIngredient = card.properties?.["Huvudingrediens"]?.select?.name || null
             const categories = (card.properties?.["Kategori"]?.multi_select).map((item) => item.name) || null
             const lastMealPrep = {
@@ -57,15 +67,14 @@ router.get('/all-recipes-structured', async (req, res) => {
                 value: card.properties?.['Rating']?.select?.name
                     ? Number(card.properties['Rating'].select.name.match(/\((\d+)\)/)?.[1]) || null
                     : null
-            }
+            };
+            const mealType = (card.properties?.["Måltidstyp"]?.multi_select).map((item) => item.name) || null
 
-            const introduction = ""
-            const chefNotes = ""
-            const personalNotes = ""
-            const url = ""
-            const mealType = []
-            const cookingMethod = []
-            const source = ""
+            const cookingMethod = (card.properties?.['Tillagningsmetod']?.multi_select).map((item) => item.name) || null
+
+            const introduction = getPlainTextFromRichText(card.properties?.['Introduktion']);
+            const chefNotes = getPlainTextFromRichText(card.properties?.['Tips']);
+            const personalNotes = getPlainTextFromRichText(card.properties?.['Notes (egna)']);
 
 
 
@@ -101,11 +110,9 @@ router.get('/all-recipes-structured', async (req, res) => {
 
 
 
-            // const lastCooked = page.properties['Senast Tillagat']?.date?.start || 'Ingen information om tillagning';
-            // const direktlink = page.properties["Direktlänk Online"]?.url || " ingen länk";
-            // const instructions = page.properties["✅ INSTRUKTIONER"]?.rich_text.map((segment) => segment.text.content).join("") || "no instruktioner";
 
-            return { id, title, mainIngredient, categories, lastMealPrep, rating };
+
+            return { id, title, url, created_time, last_edited_time, source, mainIngredient, categories, lastMealPrep, rating, mealType, cookingMethod, introduction, chefNotes, personalNotes, variants };
         });
 
         res.json(results);
