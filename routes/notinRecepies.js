@@ -59,33 +59,29 @@ router.get('/all-recipes-structured', async (req, res) => {
                     (card.properties?.['Meal Prep']?.date?.end)
                         ? (card.properties?.['Meal Prep']?.date?.end)
                         : (card.properties?.['Meal Prep']?.date?.start || null)
-
             }
-            const rating =
-            {
+            const rating = {
                 label: card.properties?.['Rating']?.select?.name || null,
                 value: card.properties?.['Rating']?.select?.name
                     ? Number(card.properties['Rating'].select.name.match(/\((\d+)\)/)?.[1]) || null
                     : null
             };
             const mealType = (card.properties?.["Måltidstyp"]?.multi_select).map((item) => item.name) || null
-
             const cookingMethod = (card.properties?.['Tillagningsmetod']?.multi_select).map((item) => item.name) || null
-
             const introduction = getPlainTextFromRichText(card.properties?.['Introduktion']);
             const instructions = getPlainTextFromRichText(card.properties?.['Instruktioner']);
-
             const chefNotes = getPlainTextFromRichText(card.properties?.['Tips']);
             const personalNotes = getPlainTextFromRichText(card.properties?.['Notes (egna)']);
 
+            // ittererar över varje variant som kan finnas.
             const variantsToItterate = ["original", "custom1", "custom2", "custom3"]
-            const variants = variantsToItterate.map((variant) => {
-                return {
+            const variants = variantsToItterate.flatMap((variant) => {
+                // bygger ihop ett objekt per variant
+                const variantObject = {
                     isOriginal: variant == "original" ? true : false,
                     title: getPlainTextFromRichText(card.properties?.[`Titel (${variant})`]),
                     personalComment: getPlainTextFromRichText(card.properties?.[`Kommentar (${variant})`]),
                     ingredients: getPlainTextFromRichText(card.properties?.[`Ingredienser (${variant})`]),
-
                     macrosPerServing: {
                         calories: card.properties?.[`Kcal/port (${variant})`]?.number || null,
                         protein: card.properties?.[`Protein(g)/port (${variant})`]?.number || null,
@@ -94,10 +90,17 @@ router.get('/all-recipes-structured', async (req, res) => {
                     },
                     servings: card.properties?.[`Antal Portioner (${variant})`]?.number || null,
                 }
+                // om varianten har vettigt innehåll så skickas den med annars ej. makros per serveringar kommr alltid ha värde även om keys i den är false så därför kan vi nte använda den som conditional.
+                if (variantObject.personalComment || variantObject.title || variantObject.ingredients || variantObject.servings) {
+                    return [variantObject]
+                } else {
+                    // flatMap ser tom array i returnern som ingen return alls. då slipper vi nyll i resultatarrayen som map() annars gett
+                    return []
+                }
 
             })
 
-            return { id, title, url, created_time, last_edited_time, source, mainIngredient, categories, lastMealPrep, rating, mealType, cookingMethod, introduction, chefNotes, personalNotes, variants };
+            return { id, title, url, created_time, last_edited_time, source, mainIngredient, categories, lastMealPrep, rating, mealType, cookingMethod, introduction, instructions, chefNotes, personalNotes, variants };
         });
 
         res.json(results);
