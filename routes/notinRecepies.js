@@ -91,7 +91,8 @@ router.get('/all-recipes-structured', async (req, res) => {
                     servings: card.properties?.[`Antal Portioner (${variant})`]?.number || null,
                 }
                 // om varianten har vettigt innehåll så skickas den med annars ej. makros per serveringar kommr alltid ha värde även om keys i den är false så därför kan vi nte använda den som conditional.
-                if (variantObject.personalComment || variantObject.title || variantObject.ingredients || variantObject.servings) {
+                //varianter med key isOriginal kommer alltid med
+                if (variantObject.isOriginal || variantObject.personalComment || variantObject.title || variantObject.ingredients || variantObject.servings) {
                     return [variantObject]
                 } else {
                     // flatMap ser tom array i returnern som ingen return alls. då slipper vi nyll i resultatarrayen som map() annars gett
